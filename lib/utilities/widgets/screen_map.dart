@@ -28,41 +28,50 @@ class ScreenMapState extends State<ScreenMap> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Path Finder"), actions: [
-        Slider(
-            value: widget.mapSize,
-            max: 50,
-            min: 10,
-            onChanged: (double value) {
-              setState(() {
-                widget.mapSize = value;
-                createMaps();
-              });
-            })
-      ]),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: List.generate(
-            widget.mapSize.toInt(),
-            (i) => Row(
-                  children: List.generate(
-                      widget.mapSize.toInt(),
-                      (j) => GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                widget.maps[i][j].color = Colors.red;
-                              });
-                            },
-                            child: Container(
-                              width: 50,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                  color: widget.maps[i][j].color,
-                                  border: Border.all(color: Colors.black12)),
-                            ),
-                          )),
-                )),
-      ),
-    );
+        appBar: AppBar(title: const Text("Path Finder"), actions: [
+          Slider(
+              value: widget.mapSize,
+              max: 50,
+              min: 10,
+              activeColor: Colors.yellow,
+              inactiveColor: Colors.brown,
+              onChanged: (double value) {
+                setState(() {
+                  widget.mapSize = value;
+                  createMaps();
+                });
+              })
+        ]),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+                widget.mapSize.toInt(),
+                (i) => Flexible(
+                        child: Row(
+                      children: List.generate(
+                          widget.mapSize.toInt(),
+                          (j) => Flexible(
+                                  child: GestureDetector(
+                                onDoubleTap: () {
+                                  setState(() {
+                                    widget.maps[i][j].color = Colors.blue;
+                                  });
+                                },
+                                onTap: () {
+                                  setState(() {
+                                    widget.maps[i][j].color = Colors.red;
+                                  });
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                      color: widget.maps[i][j].color,
+                                      border:
+                                          Border.all(color: Colors.black12)),
+                                ),
+                              ))),
+                    ))),
+          ),
+        ));
   }
 }
