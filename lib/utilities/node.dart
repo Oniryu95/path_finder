@@ -7,6 +7,6 @@ class Node {
 
   Node() {
     adj = [];
-    color = Colors.green;
+    color = Colors.white70;
   }
 }

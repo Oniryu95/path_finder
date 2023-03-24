@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:path_finder/utilities/algorithms.dart';
 import 'package:path_finder/utilities/node.dart';
 
 class ScreenMap extends StatefulWidget {
@@ -26,6 +27,49 @@ class ScreenMapState extends State<ScreenMap> {
       widget.maps = List.generate(widget.mapSize.toInt(),
           (index) => List.generate(widget.mapSize.toInt(), (index) => Node()));
     });
+    getAllAdj();
+  }
+
+  void getAllAdj() {
+    for (int i = 0; i < widget.mapSize; i++) {
+      for (int j = 0; j < widget.mapSize; j++) {
+        getSingleAdj(i, j);
+      }
+    }
+  }
+
+  void getSingleAdj(int i, int j) {
+    if (j - 1 > 0) {
+      widget.maps[i][j].adj.add(widget.maps[i][j - 1]);
+    }
+
+    if (j + 1 < widget.mapSize) {
+      widget.maps[i][j].adj.add(widget.maps[i][j + 1]);
+    }
+
+    if (i - 1 > 0) {
+      widget.maps[i][j].adj.add(widget.maps[i - 1][j]);
+    }
+
+    if (i + 1 < widget.mapSize) {
+      widget.maps[i][j].adj.add(widget.maps[i + 1][j]);
+    }
+
+    if (i + 1 < widget.mapSize && j + 1 < widget.mapSize) {
+      widget.maps[i][j].adj.add(widget.maps[i + 1][j + 1]);
+    }
+
+    if (i - 1 > 0 && j - 1 > 0) {
+      widget.maps[i][j].adj.add(widget.maps[i - 1][j - 1]);
+    }
+
+    if (i - 1 > 0 && j + 1 < widget.mapSize) {
+      widget.maps[i][j].adj.add(widget.maps[i - 1][j + 1]);
+    }
+
+    if (i + 1 < widget.mapSize && j - 1 > 0) {
+      widget.maps[i][j].adj.add(widget.maps[i + 1][j - 1]);
+    }
   }
 
   @override
@@ -40,7 +84,7 @@ class ScreenMapState extends State<ScreenMap> {
             inactiveColor: Colors.brown,
             onChanged: (double value) {
               setState(() {
-                widget.mapSize = value;
+                widget.mapSize = value.round() as double;
                 createMaps();
               });
             })
@@ -71,7 +115,7 @@ class ScreenMapState extends State<ScreenMap> {
 
                                           if (widget.goal !=
                                               widget.maps[i][j]) {
-                                            widget.goal!.color = Colors.green;
+                                            widget.goal!.color = Colors.white70;
                                             widget.goal = widget.maps[i][j];
                                           }
                                           widget.maps[i][j].color = Colors.blue;
@@ -90,7 +134,8 @@ class ScreenMapState extends State<ScreenMap> {
 
                                           if (widget.start !=
                                               widget.maps[i][j]) {
-                                            widget.start!.color = Colors.green;
+                                            widget.start!.color =
+                                                Colors.white70;
                                             widget.start = widget.maps[i][j];
                                           }
                                           widget.maps[i][j].color = Colors.red;
@@ -102,7 +147,9 @@ class ScreenMapState extends State<ScreenMap> {
                                           color: widget.maps[i][j].color,
                                           border: Border.all(
                                               color: Colors.black12)),
-                                      duration: const Duration(seconds: 1),
+                                      duration:
+                                          const Duration(milliseconds: 750),
+                                      curve: Curves.bounceOut,
                                     ),
                                   ))),
                         ))),
@@ -110,8 +157,21 @@ class ScreenMapState extends State<ScreenMap> {
           Flexible(
             flex: 1,
             child: Row(
-              children: const [
-                Flexible(child: Text("Deep first")),
+              children: [
+                Flexible(
+                    child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            if (widget.start != null &&
+                                widget.goal != null &&
+                                !widget.isWorking) {
+                              widget.isWorking = true;
+                              Algo.depthFirst(widget.start!, widget.goal!);
+                              widget.isWorking = false;
+                            }
+                          });
+                        },
+                        child: Text("Deep first"))),
               ],
             ),
           )
