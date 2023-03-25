@@ -22,6 +22,12 @@ class ScreenMapState extends State<ScreenMap> {
     super.initState();
   }
 
+  void changeUI(Node node) {
+    setState(() {
+      node.color = Colors.black12;
+    });
+  }
+
   void createMaps() {
     setState(() {
       widget.maps = List.generate(widget.mapSize.toInt(),
@@ -166,12 +172,13 @@ class ScreenMapState extends State<ScreenMap> {
                                 widget.goal != null &&
                                 !widget.isWorking) {
                               widget.isWorking = true;
-                              Algo.depthFirst(widget.start!, widget.goal!);
+                              Algo.depthFirst(widget.start!, changeUI);
                               widget.isWorking = false;
+                              Algo.isFound = false;
                             }
                           });
                         },
-                        child: Text("Deep first"))),
+                        child: const Text("Deep first"))),
               ],
             ),
           )
