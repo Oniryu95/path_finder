@@ -10,6 +10,7 @@ class ScreenMap extends StatefulWidget {
   Node? start;
   Node? goal;
   bool isWorking = false;
+  double speedAnimation = 2;
 
   @override
   ScreenMapState createState() => ScreenMapState();
@@ -22,9 +23,9 @@ class ScreenMapState extends State<ScreenMap> {
     super.initState();
   }
 
-  void changeUI(Node node) {
+  void changeUI(Node node, Color color) {
     setState(() {
-      node.color = Colors.black12;
+      node.color = color;
     });
   }
 
@@ -34,6 +35,7 @@ class ScreenMapState extends State<ScreenMap> {
           (index) => List.generate(widget.mapSize.toInt(), (index) => Node()));
     });
     getAllAdj();
+    widget.start = widget.goal = null;
   }
 
   void getAllAdj() {
@@ -45,7 +47,7 @@ class ScreenMapState extends State<ScreenMap> {
   }
 
   void getSingleAdj(int i, int j) {
-    if (j - 1 > 0) {
+    if (j - 1 >= 0) {
       widget.maps[i][j].adj.add(widget.maps[i][j - 1]);
     }
 
@@ -53,7 +55,7 @@ class ScreenMapState extends State<ScreenMap> {
       widget.maps[i][j].adj.add(widget.maps[i][j + 1]);
     }
 
-    if (i - 1 > 0) {
+    if (i - 1 >= 0) {
       widget.maps[i][j].adj.add(widget.maps[i - 1][j]);
     }
 
@@ -65,15 +67,15 @@ class ScreenMapState extends State<ScreenMap> {
       widget.maps[i][j].adj.add(widget.maps[i + 1][j + 1]);
     }
 
-    if (i - 1 > 0 && j - 1 > 0) {
+    if (i - 1 >= 0 && j - 1 >= 0) {
       widget.maps[i][j].adj.add(widget.maps[i - 1][j - 1]);
     }
 
-    if (i - 1 > 0 && j + 1 < widget.mapSize) {
+    if (i - 1 >= 0 && j + 1 < widget.mapSize) {
       widget.maps[i][j].adj.add(widget.maps[i - 1][j + 1]);
     }
 
-    if (i + 1 < widget.mapSize && j - 1 > 0) {
+    if (i + 1 < widget.mapSize && j - 1 >= 0) {
       widget.maps[i][j].adj.add(widget.maps[i + 1][j - 1]);
     }
   }
@@ -82,18 +84,48 @@ class ScreenMapState extends State<ScreenMap> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Path Finder"), actions: [
-        Slider(
-            value: widget.mapSize,
-            max: 40,
-            min: 10,
-            activeColor: Colors.yellow,
-            inactiveColor: Colors.brown,
-            onChanged: (double value) {
-              setState(() {
-                widget.mapSize = value.round() as double;
+        Row(
+          children: [
+            const Text("Map size:"),
+            Slider(
+                value: widget.mapSize,
+                max: 40,
+                min: 10,
+                activeColor: Colors.yellow,
+                inactiveColor: Colors.brown,
+                onChanged: (double value) {
+                  setState(() {
+                    if (!widget.isWorking) {
+                      widget.mapSize = value.round() as double;
+                      createMaps();
+                    }
+                  });
+                }),
+          ],
+        ),
+        Row(
+          children: [
+            const Text("Animation speed:"),
+            Slider(
+                value: widget.speedAnimation,
+                max: 10,
+                min: 2,
+                activeColor: Colors.yellow,
+                inactiveColor: Colors.brown,
+                onChanged: (double value) {
+                  setState(() {
+                    widget.speedAnimation = value.round() as double;
+                  });
+                }),
+          ],
+        ),
+        IconButton(
+            onPressed: () {
+              if (!widget.isWorking) {
                 createMaps();
-              });
-            })
+              }
+            },
+            icon: const Icon(Icons.clear))
       ]),
       body: Column(
         children: [
@@ -166,17 +198,17 @@ class ScreenMapState extends State<ScreenMap> {
               children: [
                 Flexible(
                     child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            if (widget.start != null &&
-                                widget.goal != null &&
-                                !widget.isWorking) {
-                              widget.isWorking = true;
-                              Algo.depthFirst(widget.start!, changeUI);
-                              widget.isWorking = false;
-                              Algo.isFound = false;
-                            }
-                          });
+                        onTap: () async {
+                          if (widget.start != null &&
+                              widget.goal != null &&
+                              !widget.isWorking) {
+                            widget.isWorking = true;
+                            await Algo.depthFirst(
+                                widget.start!, changeUI, widget.speedAnimation);
+                            widget.start!.color = Colors.red;
+                            widget.isWorking = false;
+                            Algo.isFound = false;
+                          }
                         },
                         child: const Text("Deep first"))),
               ],
