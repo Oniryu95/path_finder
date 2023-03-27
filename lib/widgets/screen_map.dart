@@ -89,7 +89,7 @@ class ScreenMapState extends State<ScreenMap> {
             const Text("Map size:"),
             Slider(
                 value: widget.mapSize,
-                max: 40,
+                max: 30,
                 min: 10,
                 activeColor: Colors.yellow,
                 inactiveColor: Colors.brown,
@@ -108,7 +108,7 @@ class ScreenMapState extends State<ScreenMap> {
             const Text("Animation speed:"),
             Slider(
                 value: widget.speedAnimation,
-                max: 10,
+                max: 15,
                 min: 2,
                 activeColor: Colors.yellow,
                 inactiveColor: Colors.brown,
@@ -125,7 +125,7 @@ class ScreenMapState extends State<ScreenMap> {
                 createMaps();
               }
             },
-            icon: const Icon(Icons.clear))
+            icon: const Icon(Icons.refresh))
       ]),
       body: Column(
         children: [
@@ -211,6 +211,20 @@ class ScreenMapState extends State<ScreenMap> {
                           }
                         },
                         child: const Text("Deep first"))),
+                GestureDetector(
+                    onTap: () async {
+                      if (widget.start != null &&
+                          widget.goal != null &&
+                          !widget.isWorking) {
+                        widget.isWorking = true;
+                        await Algo.breathFirst(
+                            widget.start!, changeUI, widget.speedAnimation);
+                        widget.start!.color = Colors.red;
+                        widget.isWorking = false;
+                        Algo.isFound = false;
+                      }
+                    },
+                    child: const Text("Breath first")),
               ],
             ),
           )
