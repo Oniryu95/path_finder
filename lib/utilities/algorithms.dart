@@ -1,5 +1,4 @@
 import 'dart:collection';
-
 import 'package:flutter/material.dart';
 import 'node.dart';
 
@@ -37,7 +36,6 @@ class Algo {
       if (first.color == Colors.blue) {
         isFound = true;
         changeUI(first, Colors.yellow);
-        //non capisco perché io debba inserire questo, è implicito.
       } else if (first.color != Colors.black12) {
         changeUI(first, Colors.black12);
         await Future.delayed(Duration(milliseconds: (100 ~/ speedAnimation)));

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:path_finder/widgets/screen_map.dart';
+import 'package:path_finder/screens/screen_map.dart';
 
 void main() {
   runApp(const MyApp());
