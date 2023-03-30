@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:path_finder/utilities/algorithms.dart';
 import 'package:path_finder/utilities/node.dart';
+import 'package:path_finder/utilities/offset.dart';
 
 class ScreenMap extends StatefulWidget {
   ScreenMap({Key? key}) : super(key: key);
 
-  double mapSize = 10;
+  late double mapSize;
+  late bool isWorking;
+  late double speedAnimation;
   List<List<Node>> maps = [];
   Node? start;
   Node? goal;
-  bool isWorking = false;
-  double speedAnimation = 2;
 
   @override
   ScreenMapState createState() => ScreenMapState();
@@ -19,6 +20,9 @@ class ScreenMap extends StatefulWidget {
 class ScreenMapState extends State<ScreenMap> {
   @override
   void initState() {
+    widget.isWorking = false;
+    widget.speedAnimation = 2;
+    widget.mapSize = 10;
     createMaps();
     super.initState();
   }
@@ -39,44 +43,38 @@ class ScreenMapState extends State<ScreenMap> {
   }
 
   void getAllAdj() {
+    Utilities utilities = Utilities();
+
     for (int i = 0; i < widget.mapSize; i++) {
       for (int j = 0; j < widget.mapSize; j++) {
-        getSingleAdj(i, j);
+        getSingleAdj(i, j, utilities);
       }
     }
   }
 
-  void getSingleAdj(int i, int j) {
-    if (j - 1 >= 0) {
-      widget.maps[i][j].adj.add(widget.maps[i][j - 1]);
+  void getSingleAdj(int i, int j, Utilities utilities) {
+    for (PairInteger offset in utilities.offsets) {
+      if (j + offset.j >= 0 &&
+          j + offset.j < widget.mapSize &&
+          i + offset.i < widget.mapSize &&
+          i + offset.i >= 0) {
+        widget.maps[i][j].adj.add(widget.maps[i + offset.i][j + offset.j]);
+      }
     }
+  }
 
-    if (j + 1 < widget.mapSize) {
-      widget.maps[i][j].adj.add(widget.maps[i][j + 1]);
-    }
+  Future<void> runAlgo(Function algo) async {
+    if (widget.start != null && widget.goal != null && !widget.isWorking) {
+      setState(() {
+        widget.isWorking = true;
+      });
 
-    if (i - 1 >= 0) {
-      widget.maps[i][j].adj.add(widget.maps[i - 1][j]);
-    }
-
-    if (i + 1 < widget.mapSize) {
-      widget.maps[i][j].adj.add(widget.maps[i + 1][j]);
-    }
-
-    if (i + 1 < widget.mapSize && j + 1 < widget.mapSize) {
-      widget.maps[i][j].adj.add(widget.maps[i + 1][j + 1]);
-    }
-
-    if (i - 1 >= 0 && j - 1 >= 0) {
-      widget.maps[i][j].adj.add(widget.maps[i - 1][j - 1]);
-    }
-
-    if (i - 1 >= 0 && j + 1 < widget.mapSize) {
-      widget.maps[i][j].adj.add(widget.maps[i - 1][j + 1]);
-    }
-
-    if (i + 1 < widget.mapSize && j - 1 >= 0) {
-      widget.maps[i][j].adj.add(widget.maps[i + 1][j - 1]);
+      await algo(widget.start!, changeUI, widget.speedAnimation);
+      widget.start!.color = Colors.red;
+      setState(() {
+        widget.isWorking = false;
+      });
+      Algo.isFound = false;
     }
   }
 
@@ -195,34 +193,16 @@ class ScreenMapState extends State<ScreenMap> {
           Flexible(
             flex: 1,
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Flexible(
-                    child: GestureDetector(
-                        onTap: () async {
-                          if (widget.start != null &&
-                              widget.goal != null &&
-                              !widget.isWorking) {
-                            widget.isWorking = true;
-                            await Algo.depthFirst(
-                                widget.start!, changeUI, widget.speedAnimation);
-                            widget.start!.color = Colors.red;
-                            widget.isWorking = false;
-                            Algo.isFound = false;
-                          }
-                        },
-                        child: const Text("Deep first"))),
                 GestureDetector(
-                    onTap: () async {
-                      if (widget.start != null &&
-                          widget.goal != null &&
-                          !widget.isWorking) {
-                        widget.isWorking = true;
-                        await Algo.breathFirst(
-                            widget.start!, changeUI, widget.speedAnimation);
-                        widget.start!.color = Colors.red;
-                        widget.isWorking = false;
-                        Algo.isFound = false;
-                      }
+                    onTap: () {
+                      runAlgo(Algo.depthFirst);
+                    },
+                    child: const Text("Deep first")),
+                GestureDetector(
+                    onTap: () {
+                      runAlgo(Algo.breathFirst);
                     },
                     child: const Text("Breath first")),
               ],
