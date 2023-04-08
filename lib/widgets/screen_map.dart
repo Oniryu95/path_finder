@@ -7,8 +7,9 @@ class ScreenMap extends StatefulWidget {
   ScreenMap({Key? key}) : super(key: key);
 
   late double mapSize;
-  late bool isWorking;
+  late bool isWorking, showText, firstTime, isOver;
   late double speedAnimation;
+  late String text;
   List<List<Node>> maps = [];
   Node? start;
   Node? goal;
@@ -20,9 +21,12 @@ class ScreenMap extends StatefulWidget {
 class ScreenMapState extends State<ScreenMap> {
   @override
   void initState() {
-    widget.isWorking = false;
+    widget.isWorking = widget.isOver = false;
+    widget.showText = widget.firstTime = true;
     widget.speedAnimation = 2;
     widget.mapSize = 10;
+    widget.text =
+        "To choose the starting point, click once on a rectangle, twice for the destination.";
     createMaps();
     super.initState();
   }
@@ -37,6 +41,8 @@ class ScreenMapState extends State<ScreenMap> {
     setState(() {
       widget.maps = List.generate(widget.mapSize.toInt(),
           (index) => List.generate(widget.mapSize.toInt(), (index) => Node()));
+
+      !widget.firstTime ? widget.showText = false : widget.firstTime = false;
     });
     getAllAdj();
     widget.start = widget.goal = null;
@@ -63,16 +69,24 @@ class ScreenMapState extends State<ScreenMap> {
     }
   }
 
-  Future<void> runAlgo(Function algo) async {
-    if (widget.start != null && widget.goal != null && !widget.isWorking) {
+  Future<void> runAlgo(Function algo, [String type = "normal"]) async {
+    if (widget.start != null &&
+        widget.goal != null &&
+        !widget.isWorking &&
+        !widget.isOver) {
       setState(() {
         widget.isWorking = true;
       });
 
-      await algo(widget.start!, changeUI, widget.speedAnimation);
+      if (type == "normal") {
+        await algo(widget.start!, changeUI, widget.speedAnimation);
+      } else {
+        await algo(widget.start!, changeUI, widget.speedAnimation, widget.maps);
+      }
       widget.start!.color = Colors.red;
       setState(() {
         widget.isWorking = false;
+        widget.isOver = true;
       });
       Algo.isFound = false;
     }
@@ -140,12 +154,13 @@ class ScreenMapState extends State<ScreenMap> {
                               (j) => Flexible(
                                       child: GestureDetector(
                                     onDoubleTap: () {
-                                      if (!widget.isWorking) {
+                                      if (!widget.isWorking && !widget.isOver) {
                                         setState(() {
                                           if (widget.goal == null) {
                                             widget.goal = widget.maps[i][j];
                                             widget.maps[i][j].color =
                                                 Colors.blue;
+                                            widget.showText = false;
                                             return;
                                           }
 
@@ -155,16 +170,18 @@ class ScreenMapState extends State<ScreenMap> {
                                             widget.goal = widget.maps[i][j];
                                           }
                                           widget.maps[i][j].color = Colors.blue;
+                                          widget.showText = false;
                                         });
                                       }
                                     },
                                     onTap: () {
-                                      if (!widget.isWorking) {
+                                      if (!widget.isWorking && !widget.isOver) {
                                         setState(() {
                                           if (widget.start == null) {
                                             widget.start = widget.maps[i][j];
                                             widget.maps[i][j].color =
                                                 Colors.red;
+                                            widget.showText = false;
                                             return;
                                           }
 
@@ -175,6 +192,7 @@ class ScreenMapState extends State<ScreenMap> {
                                             widget.start = widget.maps[i][j];
                                           }
                                           widget.maps[i][j].color = Colors.red;
+                                          widget.showText = false;
                                         });
                                       }
                                     },
@@ -190,6 +208,15 @@ class ScreenMapState extends State<ScreenMap> {
                                   ))),
                         ))),
               )),
+          widget.showText
+              ? Flexible(
+                  flex: 2,
+                  child: Center(
+                    child: Text(
+                      widget.text,
+                    ),
+                  ))
+              : Container(),
           Flexible(
             flex: 1,
             child: Row(
@@ -205,9 +232,19 @@ class ScreenMapState extends State<ScreenMap> {
                       runAlgo(Algo.breathFirst);
                     },
                     child: const Text("Breath first")),
+                GestureDetector(
+                    onTap: () async {
+                      await runAlgo(Algo.dijkstra, "dijkstra");
+                      setState(() {
+                        widget.text =
+                            "The shortest path from source to object is ${widget.goal!.distanceFromSrc} rectangles long";
+                        widget.showText = true;
+                      });
+                    },
+                    child: const Text("Dijkstra"))
               ],
             ),
-          )
+          ),
         ],
       ),
     );
