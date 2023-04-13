@@ -82,6 +82,12 @@ class Algo {
     }
   }
 
+  static Future<void> aStar(Node start, Function changeUI,
+      double speedAnimation, List<List<Node>> map) async {
+
+
+  }
+
   static Node findMinNode(List<List<Node>> map) {
     Node minNode = Node();
 

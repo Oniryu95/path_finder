@@ -45,6 +45,7 @@ class ScreenMapState extends State<ScreenMap> {
       !widget.firstTime ? widget.showText = false : widget.firstTime = false;
     });
     getAllAdj();
+    widget.isOver = false;
     widget.start = widget.goal = null;
   }
 
@@ -90,6 +91,24 @@ class ScreenMapState extends State<ScreenMap> {
       });
       Algo.isFound = false;
     }
+  }
+
+  Node setPoint(Node? point, Node node, Color color) {
+    setState(() {
+      if (point == null) {
+        node.color = color;
+        widget.showText = false;
+        return;
+      }
+
+      if (point != node) {
+        point!.color = Colors.white70;
+      }
+      node.color = color;
+      widget.showText = false;
+    });
+
+    return node;
   }
 
   @override
@@ -156,43 +175,16 @@ class ScreenMapState extends State<ScreenMap> {
                                     onDoubleTap: () {
                                       if (!widget.isWorking && !widget.isOver) {
                                         setState(() {
-                                          if (widget.goal == null) {
-                                            widget.goal = widget.maps[i][j];
-                                            widget.maps[i][j].color =
-                                                Colors.blue;
-                                            widget.showText = false;
-                                            return;
-                                          }
-
-                                          if (widget.goal !=
-                                              widget.maps[i][j]) {
-                                            widget.goal!.color = Colors.white70;
-                                            widget.goal = widget.maps[i][j];
-                                          }
-                                          widget.maps[i][j].color = Colors.blue;
-                                          widget.showText = false;
+                                          widget.goal = setPoint(widget.goal,
+                                              widget.maps[i][j], Colors.blue);
                                         });
                                       }
                                     },
                                     onTap: () {
                                       if (!widget.isWorking && !widget.isOver) {
                                         setState(() {
-                                          if (widget.start == null) {
-                                            widget.start = widget.maps[i][j];
-                                            widget.maps[i][j].color =
-                                                Colors.red;
-                                            widget.showText = false;
-                                            return;
-                                          }
-
-                                          if (widget.start !=
-                                              widget.maps[i][j]) {
-                                            widget.start!.color =
-                                                Colors.white70;
-                                            widget.start = widget.maps[i][j];
-                                          }
-                                          widget.maps[i][j].color = Colors.red;
-                                          widget.showText = false;
+                                          widget.start = setPoint(widget.start,
+                                              widget.maps[i][j], Colors.red);
                                         });
                                       }
                                     },
@@ -241,7 +233,7 @@ class ScreenMapState extends State<ScreenMap> {
                         widget.showText = true;
                       });
                     },
-                    child: const Text("Dijkstra"))
+                    child: const Text("Dijkstra")),
               ],
             ),
           ),
