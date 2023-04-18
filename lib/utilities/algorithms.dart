@@ -82,14 +82,41 @@ class Algo {
     }
   }
 
-  static Future<void> aStar(Node start, Function changeUI,
+  static Future<void> aStar(Node start, Node goal, Function changeUI,
       double speedAnimation, List<List<Node>> map) async {
+    late Node minNode;
+    late double newDistance;
+    start.distanceFromSrc = 0;
 
+    for (Node node in start.adj) {
+      node.distanceFromSrc = node.distance + heuristic(node, goal);
+    }
 
+    for (int i = 0; i < map.length * map.length; i++) {
+      minNode = findMinNode(map);
+
+      if (minNode.color == Colors.blue) {
+        changeUI(minNode, Colors.yellow);
+
+        break;
+      } else {
+        changeUI(minNode, Colors.black12);
+
+        for (Node node in minNode.adj) {
+          newDistance = minNode.distanceFromSrc + node.distance;
+
+          if (newDistance < node.distanceFromSrc) {
+            node.distanceFromSrc = newDistance;
+          }
+        }
+
+        await Future.delayed(Duration(milliseconds: (100 ~/ speedAnimation)));
+      }
+    }
   }
 
   static Node findMinNode(List<List<Node>> map) {
-    Node minNode = Node();
+    Node minNode = Node(0, 0);
 
     for (List<Node> nodeList in map) {
       for (Node node in nodeList) {
@@ -102,5 +129,28 @@ class Algo {
     }
 
     return minNode;
+  }
+
+  static int heuristic(Node node, Node goal) {
+
+    int distance = 0;
+    List nIndex = [node.index[0],node.index[1]];
+    List gIndex = [goal.index[0],goal.index[1]];
+
+    if (nIndex[0] == gIndex[0] && nIndex[1] == gIndex[0]) {
+      return distance;
+    }
+    else{
+
+      if(nIndex[0] == gIndex[0]){
+
+        while(nIndex[1] != gIndex[1]){
+
+          nIndex[1] < gIndex[1] ? nIndex = nIndex[1]++ : nIndex[1]--;
+          distance++;
+        }
+      }
+      return distance;
+    }
   }
 }

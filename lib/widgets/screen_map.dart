@@ -40,7 +40,7 @@ class ScreenMapState extends State<ScreenMap> {
   void createMaps() {
     setState(() {
       widget.maps = List.generate(widget.mapSize.toInt(),
-          (index) => List.generate(widget.mapSize.toInt(), (index) => Node()));
+          (i) => List.generate(widget.mapSize.toInt(), (j) => Node(i,j)));
 
       !widget.firstTime ? widget.showText = false : widget.firstTime = false;
     });
