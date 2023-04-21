@@ -40,7 +40,7 @@ class ScreenMapState extends State<ScreenMap> {
   void createMaps() {
     setState(() {
       widget.maps = List.generate(widget.mapSize.toInt(),
-          (i) => List.generate(widget.mapSize.toInt(), (j) => Node(i,j)));
+          (i) => List.generate(widget.mapSize.toInt(), (j) => Node(i, j)));
 
       !widget.firstTime ? widget.showText = false : widget.firstTime = false;
     });
@@ -79,11 +79,29 @@ class ScreenMapState extends State<ScreenMap> {
         widget.isWorking = true;
       });
 
-      switch(type){
-
-        case "normal":{await algo(widget.start!, changeUI, widget.speedAnimation);break;}
-        case "dijkstra":{await algo(widget.start!, changeUI, widget.speedAnimation, widget.maps);break;}
-        case "aStar":{await algo(widget.start!,widget.goal!,changeUI,widget.speedAnimation,widget.maps);break;}
+      switch (type) {
+        case "normal":
+          {
+            await algo(widget.start!, changeUI, widget.speedAnimation);
+            break;
+          }
+        case "dijkstra":
+          {
+            await algo(
+                widget.start!, changeUI, widget.speedAnimation, widget.maps);
+            setState(() {
+              widget.text =
+                  "The shortest path from source to object is ${widget.goal!.distanceFromSrc} rectangles long";
+              widget.showText = true;
+            });
+            break;
+          }
+        case "aStar":
+          {
+            await algo(widget.start!, widget.goal!, changeUI,
+                widget.speedAnimation, widget.maps);
+            break;
+          }
       }
 
       widget.start!.color = Colors.red;
@@ -229,11 +247,6 @@ class ScreenMapState extends State<ScreenMap> {
                 GestureDetector(
                     onTap: () async {
                       await runAlgo(Algo.dijkstra, "dijkstra");
-                      setState(() {
-                        widget.text =
-                            "The shortest path from source to object is ${widget.goal!.distanceFromSrc} rectangles long";
-                        widget.showText = true;
-                      });
                     },
                     child: const Text("Dijkstra")),
                 GestureDetector(

@@ -6,7 +6,7 @@ class Node {
   late Color color;
   List index = [];
   double distance = 1;
-  double distanceFromSrc = double.maxFinite;
+  double distanceFromSrc = 999;
 
   Node(int i, int j) {
     index.add(i);
