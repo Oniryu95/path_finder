@@ -79,11 +79,13 @@ class ScreenMapState extends State<ScreenMap> {
         widget.isWorking = true;
       });
 
-      if (type == "normal") {
-        await algo(widget.start!, changeUI, widget.speedAnimation);
-      } else {
-        await algo(widget.start!, changeUI, widget.speedAnimation, widget.maps);
+      switch(type){
+
+        case "normal":{await algo(widget.start!, changeUI, widget.speedAnimation);break;}
+        case "dijkstra":{await algo(widget.start!, changeUI, widget.speedAnimation, widget.maps);break;}
+        case "aStar":{await algo(widget.start!,widget.goal!,changeUI,widget.speedAnimation,widget.maps);break;}
       }
+
       widget.start!.color = Colors.red;
       setState(() {
         widget.isWorking = false;
@@ -234,6 +236,11 @@ class ScreenMapState extends State<ScreenMap> {
                       });
                     },
                     child: const Text("Dijkstra")),
+                GestureDetector(
+                    onTap: () async {
+                      await runAlgo(Algo.aStar, "aStar");
+                    },
+                    child: const Text("A*"))
               ],
             ),
           ),

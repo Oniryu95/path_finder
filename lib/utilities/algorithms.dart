@@ -1,6 +1,14 @@
 import 'dart:collection';
+import 'dart:core';
 import 'package:flutter/material.dart';
 import 'node.dart';
+
+enum Case{
+  minMin,
+  greGre,
+  minGre,
+  greMin
+}
 
 class Algo {
   static bool isFound = false;
@@ -132,15 +140,13 @@ class Algo {
   }
 
   static int heuristic(Node node, Node goal) {
-
+    //loop infinito qui dentro.
     int distance = 0;
     List nIndex = [node.index[0],node.index[1]];
     List gIndex = [goal.index[0],goal.index[1]];
+    print("NINDEX: ${nIndex[0]} ${nIndex[1]} GINDEX: ${gIndex[0]} ${gIndex[1]}");
 
-    if (nIndex[0] == gIndex[0] && nIndex[1] == gIndex[0]) {
-      return distance;
-    }
-    else{
+    while(!(nIndex[0] == gIndex[0]) && !(nIndex[1] == gIndex[1])){
 
       if(nIndex[0] == gIndex[0]){
 
@@ -148,9 +154,52 @@ class Algo {
 
           nIndex[1] < gIndex[1] ? nIndex = nIndex[1]++ : nIndex[1]--;
           distance++;
+          print(distance);
         }
       }
+      else if(nIndex[1] == gIndex[1]){
+
+        while(nIndex[0] != gIndex[0]){
+
+          nIndex[0] < gIndex[0] ? nIndex = nIndex[0]++ : nIndex[0]--;
+          distance++;
+          print(distance);
+        }
+      }
+      else{
+
+        Case currentCase = Algo.identifyCase(nIndex, gIndex);
+
+        switch(currentCase){
+
+          case Case.greGre:{ nIndex[0]++; nIndex[1]++; break;}
+          case Case.minMin:{ nIndex[0]--; nIndex[1]--; break;}
+          case Case.greMin:{ nIndex[0]--; nIndex[1]++; break;}
+          case Case.minGre:{ nIndex[0]++; nIndex[1]--; break;}
+        }
+      }
+
+      }
+
       return distance;
     }
-  }
+
+    static Case identifyCase(List nIndex, List gIndex){
+
+      if(nIndex[0] < gIndex[0] && nIndex[1] < gIndex[1]){
+
+        return Case.minMin;
+      }
+      else if(nIndex[0] > gIndex[0] && nIndex[1] > gIndex[1]){
+
+        return Case.greGre;
+      }
+      else if(nIndex[0] < gIndex[0] && nIndex[1] > gIndex[1]){
+
+        return Case.minGre;
+      }
+      else{
+        return Case.greMin;
+      }
+    }
 }
