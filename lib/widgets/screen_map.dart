@@ -64,7 +64,8 @@ class ScreenMapState extends State<ScreenMap> {
       if (j + offset.j >= 0 &&
           j + offset.j < widget.mapSize &&
           i + offset.i < widget.mapSize &&
-          i + offset.i >= 0) {
+          i + offset.i >= 0 &&
+          widget.maps[i][j].color != Colors.black) {
         widget.maps[i][j].adj.add(widget.maps[i + offset.i][j + offset.j]);
       }
     }
@@ -87,19 +88,18 @@ class ScreenMapState extends State<ScreenMap> {
           }
         case "dijkstra":
           {
-            await algo(
-                widget.start!, changeUI, widget.speedAnimation, widget.maps);
+            await algo(widget.start!, changeUI, widget.speedAnimation);
             setState(() {
               widget.text =
-                  "The shortest path from source to object is ${widget.goal!.distanceFromSrc} rectangles long";
+                  "The shortest path from source to object is ${widget.goal!.distanceFromSrc == 999 ? "infinite" : widget.goal!.distanceFromSrc} rectangles long";
               widget.showText = true;
             });
             break;
           }
         case "aStar":
           {
-            await algo(widget.start!, widget.goal!, changeUI,
-                widget.speedAnimation, widget.maps);
+            await algo(
+                widget.start!, widget.goal!, changeUI, widget.speedAnimation);
             break;
           }
       }
@@ -205,6 +205,25 @@ class ScreenMapState extends State<ScreenMap> {
                                         setState(() {
                                           widget.start = setPoint(widget.start,
                                               widget.maps[i][j], Colors.red);
+                                        });
+                                      }
+                                    },
+                                    onLongPress: () {
+                                      if (!widget.isWorking && !widget.isOver) {
+                                        setState(() {
+                                          if (widget.maps[i][j].color !=
+                                                  Colors.red &&
+                                              widget.maps[i][j].color !=
+                                                  Colors.blue) {
+                                            if (widget.maps[i][j].color ==
+                                                Colors.black) {
+                                              widget.maps[i][j].color =
+                                                  Colors.white70;
+                                            } else {
+                                              widget.maps[i][j].color =
+                                                  Colors.black;
+                                            }
+                                          }
                                         });
                                       }
                                     },

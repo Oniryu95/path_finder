@@ -52,18 +52,20 @@ class Algo {
     }
   }
 
-  static Future<void> dijkstra(Node start, Function changeUI,
-      double speedAnimation, List<List<Node>> map) async {
+  static Future<void> dijkstra(
+      Node start, Function changeUI, double speedAnimation) async {
     late Node minNode;
     late double newDistance;
+    List<Node> exploredNodes = [];
     start.distanceFromSrc = 0;
 
     for (Node node in start.adj) {
       node.distanceFromSrc = node.distance;
+      exploredNodes.add(node);
     }
 
-    for (int i = 0; i < map.length * map.length; i++) {
-      minNode = findMinNode(map);
+    while (exploredNodes.isNotEmpty) {
+      minNode = findMinNode(exploredNodes);
 
       if (minNode.color == Colors.blue) {
         changeUI(minNode, Colors.yellow);
@@ -77,6 +79,9 @@ class Algo {
 
           if (newDistance < node.distanceFromSrc) {
             node.distanceFromSrc = newDistance;
+            if (!exploredNodes.contains(node)) {
+              exploredNodes.add(node);
+            }
           }
         }
 
@@ -85,18 +90,20 @@ class Algo {
     }
   }
 
-  static Future<void> aStar(Node start, Node goal, Function changeUI,
-      double speedAnimation, List<List<Node>> map) async {
+  static Future<void> aStar(
+      Node start, Node goal, Function changeUI, double speedAnimation) async {
     late Node minNode;
     late double newDistance;
+    List<Node> exploredNodes = [];
     start.distanceFromSrc = 0;
 
     for (Node node in start.adj) {
       node.distanceFromSrc = node.distance + heuristic(node, goal);
+      exploredNodes.add(node);
     }
 
-    for (int i = 0; i < map.length * map.length; i++) {
-      minNode = findMinNode(map);
+    while (exploredNodes.isNotEmpty) {
+      minNode = findMinNode(exploredNodes);
 
       if (minNode.color == Colors.blue) {
         changeUI(minNode, Colors.yellow);
@@ -110,6 +117,9 @@ class Algo {
 
           if (newDistance < node.distanceFromSrc) {
             node.distanceFromSrc = newDistance;
+            if (!exploredNodes.contains(node)) {
+              exploredNodes.add(node);
+            }
           }
         }
 
@@ -119,19 +129,20 @@ class Algo {
     }
   }
 
-  static Node findMinNode(List<List<Node>> map) {
+  static Node findMinNode(List<Node> exploredNodes) {
+    int index = 0;
     Node minNode = Node(0, 0);
 
-    for (List<Node> nodeList in map) {
-      for (Node node in nodeList) {
-        if (node.distanceFromSrc != double.maxFinite &&
-            minNode.distanceFromSrc > node.distanceFromSrc &&
-            (node.color == Colors.white70 || node.color == Colors.blue)) {
-          minNode = node;
-        }
+    for (int i = 0; i < exploredNodes.length; i++) {
+      if (exploredNodes[i].distanceFromSrc != double.maxFinite &&
+          minNode.distanceFromSrc > exploredNodes[i].distanceFromSrc &&
+          (exploredNodes[i].color == Colors.white70 ||
+              exploredNodes[i].color == Colors.blue)) {
+        minNode = exploredNodes[i];
+        index = i;
       }
     }
-
+    exploredNodes.removeAt(index);
     return minNode;
   }
 
