@@ -52,8 +52,8 @@ class Algo {
     }
   }
 
-  static Future<void> dijkstra(
-      Node start, Function changeUI, double speedAnimation) async {
+  static Future<void> dijkstra(Node start, Function changeUI,
+      double speedAnimation, List<List<Node>> maps) async {
     late Node minNode;
     late double newDistance;
     List<Node> exploredNodes = [];
@@ -90,15 +90,15 @@ class Algo {
     }
   }
 
-  static Future<void> aStar(
-      Node start, Node goal, Function changeUI, double speedAnimation) async {
+  static Future<void> aStar(Node start, Node goal, Function changeUI,
+      double speedAnimation, List<List<Node>> maps) async {
     late Node minNode;
     late double newDistance;
     List<Node> exploredNodes = [];
     start.distanceFromSrc = 0;
 
     for (Node node in start.adj) {
-      node.distanceFromSrc = node.distance + heuristic(node, goal);
+      node.distanceFromSrc = node.distance + heuristic(node, goal, maps);
       exploredNodes.add(node);
     }
 
@@ -113,7 +113,7 @@ class Algo {
         changeUI(minNode, Colors.black12);
 
         for (Node node in minNode.adj) {
-          newDistance = node.distance + heuristic(node, goal);
+          newDistance = node.distance + heuristic(node, goal, maps);
 
           if (newDistance < node.distanceFromSrc) {
             node.distanceFromSrc = newDistance;
@@ -146,7 +146,7 @@ class Algo {
     return minNode;
   }
 
-  static int heuristic(Node node, Node goal) {
+  static int heuristic(Node node, Node goal, List<List<Node>> maps) {
     int distance = 0;
     List nIndex = [node.index[0], node.index[1]];
     List gIndex = [goal.index[0], goal.index[1]];

@@ -26,7 +26,7 @@ class ScreenMapState extends State<ScreenMap> {
     widget.speedAnimation = 2;
     widget.mapSize = 10;
     widget.text =
-        "To choose the starting point, click once on a rectangle, twice for the destination.";
+        "With one click on a rectangle you decide the start, with a double the destination and with a prolonged one you position a wall.";
     createMaps();
     super.initState();
   }
@@ -88,7 +88,8 @@ class ScreenMapState extends State<ScreenMap> {
           }
         case "dijkstra":
           {
-            await algo(widget.start!, changeUI, widget.speedAnimation);
+            await algo(
+                widget.start!, changeUI, widget.speedAnimation, widget.maps);
             setState(() {
               widget.text =
                   "The shortest path from source to object is ${widget.goal!.distanceFromSrc == 999 ? "infinite" : widget.goal!.distanceFromSrc} rectangles long";
@@ -98,8 +99,8 @@ class ScreenMapState extends State<ScreenMap> {
           }
         case "aStar":
           {
-            await algo(
-                widget.start!, widget.goal!, changeUI, widget.speedAnimation);
+            await algo(widget.start!, widget.goal!, changeUI,
+                widget.speedAnimation, widget.maps);
             break;
           }
       }
