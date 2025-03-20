@@ -61,12 +61,16 @@ class ScreenMapState extends State<ScreenMap> {
 
   void getSingleAdj(int i, int j, Utilities utilities) {
     for (PairInteger offset in utilities.offsets) {
-      if (j + offset.j >= 0 &&
-          j + offset.j < widget.mapSize &&
-          i + offset.i < widget.mapSize &&
-          i + offset.i >= 0 &&
-          widget.maps[i][j].color != Colors.black) {
-        widget.maps[i][j].adj.add(widget.maps[i + offset.i][j + offset.j]);
+      int newI = i + offset.i;
+      int newJ = j + offset.j;
+
+      if (newJ >= 0 &&
+          newJ < widget.mapSize &&
+          newI < widget.mapSize &&
+          newI >= 0 &&
+          widget.maps[i][j].color != Colors.black &&
+          widget.maps[newI][newJ].color != Colors.black) {
+        widget.maps[i][j].adj.add(widget.maps[newI][newJ]);
       }
     }
   }
@@ -135,149 +139,273 @@ class ScreenMapState extends State<ScreenMap> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Path Finder"), actions: [
-        Row(
-          children: [
-            const Text("Map size:"),
-            Slider(
-                value: widget.mapSize,
-                max: 30,
-                min: 10,
-                activeColor: Colors.yellow,
-                inactiveColor: Colors.brown,
-                onChanged: (double value) {
-                  setState(() {
-                    if (!widget.isWorking) {
-                      widget.mapSize = value.round() as double;
-                      createMaps();
-                    }
-                  });
-                }),
-          ],
+      appBar: AppBar(
+        elevation: 4,
+        backgroundColor: Colors.indigo,
+        title: const Text(
+          "Path Finder",
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        Row(
-          children: [
-            const Text("Animation speed:"),
-            Slider(
-                value: widget.speedAnimation,
-                max: 15,
-                min: 2,
-                activeColor: Colors.yellow,
-                inactiveColor: Colors.brown,
-                onChanged: (double value) {
-                  setState(() {
-                    widget.speedAnimation = value.round() as double;
-                  });
-                }),
-          ],
-        ),
-        IconButton(
+        actions: [
+          IconButton(
             onPressed: () {
               if (!widget.isWorking) {
                 createMaps();
               }
             },
-            icon: const Icon(Icons.refresh))
-      ]),
+            icon: const Icon(Icons.refresh),
+            tooltip: "Reset Map",
+          )
+        ],
+      ),
       body: Column(
         children: [
-          Flexible(
-              flex: 15,
+          Card(
+            margin: const EdgeInsets.all(10),
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.grid_4x4, color: Colors.indigo),
+                      const SizedBox(width: 8),
+                      const Text(
+                        "Map size:",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Expanded(
+                        child: Slider(
+                          value: widget.mapSize,
+                          max: 30,
+                          min: 10,
+                          activeColor: Colors.indigo,
+                          inactiveColor: Colors.indigo.withValues(alpha: 0.3),
+                          label: widget.mapSize.round().toString(),
+                          divisions: 20,
+                          onChanged: (double value) {
+                            setState(() {
+                              if (!widget.isWorking) {
+                                widget.mapSize = value.round() as double;
+                                createMaps();
+                              }
+                            });
+                          },
+                        ),
+                      ),
+                      Text(
+                        "${widget.mapSize.round()}",
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      const Icon(Icons.speed, color: Colors.indigo),
+                      const SizedBox(width: 8),
+                      const Text(
+                        "Animation speed:",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Expanded(
+                        child: Slider(
+                          value: widget.speedAnimation,
+                          max: 15,
+                          min: 2,
+                          activeColor: Colors.indigo,
+                          inactiveColor: Colors.indigo.withValues(alpha: 0.3),
+                          label: widget.speedAnimation.round().toString(),
+                          divisions: 13,
+                          onChanged: (double value) {
+                            setState(() {
+                              widget.speedAnimation = value.round() as double;
+                            });
+                          },
+                        ),
+                      ),
+                      Text(
+                        "${widget.speedAnimation.round()}",
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 10.0),
+              decoration: BoxDecoration(
+                border: Border.all(
+                    color: Colors.indigo.withValues(alpha: 0.3), width: 2),
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(6.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
                     widget.mapSize.toInt(),
-                    (i) => Flexible(
-                            child: Row(
-                          children: List.generate(
-                              widget.mapSize.toInt(),
-                              (j) => Flexible(
-                                      child: GestureDetector(
-                                    onDoubleTap: () {
-                                      if (!widget.isWorking && !widget.isOver) {
-                                        setState(() {
-                                          widget.goal = setPoint(widget.goal,
-                                              widget.maps[i][j], Colors.blue);
-                                        });
+                    (i) => Expanded(
+                      child: Row(
+                        children: List.generate(
+                          widget.mapSize.toInt(),
+                          (j) => Expanded(
+                            child: GestureDetector(
+                              onDoubleTap: () {
+                                if (!widget.isWorking && !widget.isOver) {
+                                  setState(() {
+                                    widget.goal = setPoint(widget.goal,
+                                        widget.maps[i][j], Colors.blue);
+                                  });
+                                }
+                              },
+                              onTap: () {
+                                if (!widget.isWorking && !widget.isOver) {
+                                  setState(() {
+                                    widget.start = setPoint(widget.start,
+                                        widget.maps[i][j], Colors.red);
+                                  });
+                                }
+                              },
+                              onLongPress: () {
+                                if (!widget.isWorking && !widget.isOver) {
+                                  setState(() {
+                                    if (widget.maps[i][j].color != Colors.red &&
+                                        widget.maps[i][j].color !=
+                                            Colors.blue) {
+                                      if (widget.maps[i][j].color ==
+                                          Colors.black) {
+                                        widget.maps[i][j].color =
+                                            Colors.white70;
+                                      } else {
+                                        widget.maps[i][j].color = Colors.black;
                                       }
-                                    },
-                                    onTap: () {
-                                      if (!widget.isWorking && !widget.isOver) {
-                                        setState(() {
-                                          widget.start = setPoint(widget.start,
-                                              widget.maps[i][j], Colors.red);
-                                        });
+
+                                      for (int x = 0; x < widget.mapSize; x++) {
+                                        for (int y = 0;
+                                            y < widget.mapSize;
+                                            y++) {
+                                          widget.maps[x][y].adj.clear();
+                                        }
                                       }
-                                    },
-                                    onLongPress: () {
-                                      if (!widget.isWorking && !widget.isOver) {
-                                        setState(() {
-                                          if (widget.maps[i][j].color !=
-                                                  Colors.red &&
-                                              widget.maps[i][j].color !=
-                                                  Colors.blue) {
-                                            if (widget.maps[i][j].color ==
-                                                Colors.black) {
-                                              widget.maps[i][j].color =
-                                                  Colors.white70;
-                                            } else {
-                                              widget.maps[i][j].color =
-                                                  Colors.black;
-                                            }
-                                          }
-                                        });
-                                      }
-                                    },
-                                    child: AnimatedContainer(
-                                      decoration: BoxDecoration(
-                                          color: widget.maps[i][j].color,
-                                          border: Border.all(
-                                              color: Colors.black12)),
-                                      duration:
-                                          const Duration(milliseconds: 750),
-                                      curve: Curves.bounceOut,
-                                    ),
-                                  ))),
-                        ))),
-              )),
+                                      getAllAdj();
+                                    }
+                                  });
+                                }
+                              },
+                              child: AnimatedContainer(
+                                margin: const EdgeInsets.all(1),
+                                decoration: BoxDecoration(
+                                  color: widget.maps[i][j].color,
+                                  border: Border.all(color: Colors.black12),
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                                duration: const Duration(milliseconds: 750),
+                                curve: Curves.bounceOut,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
           widget.showText
-              ? Flexible(
-                  flex: 2,
+              ? Container(
+                  margin: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.indigo.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border:
+                        Border.all(color: Colors.indigo.withValues(alpha: 0.3)),
+                  ),
                   child: Center(
                     child: Text(
                       widget.text,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                  ))
-              : Container(),
-          Flexible(
-            flex: 1,
+                  ),
+                )
+              : const SizedBox(height: 10),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                GestureDetector(
-                    onTap: () {
-                      runAlgo(Algo.depthFirst);
-                    },
-                    child: const Text("Deep first")),
-                GestureDetector(
-                    onTap: () {
-                      runAlgo(Algo.breathFirst);
-                    },
-                    child: const Text("Breath first")),
-                GestureDetector(
-                    onTap: () async {
-                      await runAlgo(Algo.dijkstra, "dijkstra");
-                    },
-                    child: const Text("Dijkstra")),
-                GestureDetector(
-                    onTap: () async {
-                      await runAlgo(Algo.aStar, "aStar");
-                    },
-                    child: const Text("A*"))
+                _buildAlgorithmButton(
+                  "Deep First",
+                  Icons.line_style,
+                  Colors.deepPurple,
+                  () => runAlgo(Algo.depthFirst),
+                ),
+                _buildAlgorithmButton(
+                  "Breath First",
+                  Icons.grid_3x3,
+                  Colors.blue,
+                  () => runAlgo(Algo.breathFirst),
+                ),
+                _buildAlgorithmButton(
+                  "Dijkstra",
+                  Icons.directions,
+                  Colors.teal,
+                  () async => await runAlgo(Algo.dijkstra, "dijkstra"),
+                ),
+                _buildAlgorithmButton(
+                  "A*",
+                  Icons.star_outline,
+                  Colors.amber.shade800,
+                  () async => await runAlgo(Algo.aStar, "aStar"),
+                ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAlgorithmButton(
+      String text, IconData icon, Color color, VoidCallback onTap) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Card(
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          elevation: 2,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: color.withValues(alpha: 0.5)),
+            ),
+            child: Column(
+              children: [
+                Icon(icon, color: color, size: 20),
+                const SizedBox(height: 4),
+                Text(
+                  text,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

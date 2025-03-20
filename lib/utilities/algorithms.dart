@@ -19,7 +19,7 @@ class Algo {
         changeUI(start, Colors.black12);
 
         for (Node node in start.adj) {
-          if (node.color != Colors.black12) {
+          if (node.color != Colors.black12 && node.color != Colors.black) {
             await depthFirst(node, changeUI, speedAnimation);
           }
         }
@@ -45,7 +45,7 @@ class Algo {
       }
 
       for (Node node in first.adj) {
-        if (node.color != Colors.black12) {
+        if (node.color != Colors.black12 && node.color != Colors.black) {
           border.add(node);
         }
       }
